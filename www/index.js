@@ -4,11 +4,8 @@ import { Chart, default as init } from "complex-visualizer";
 
 const canvas = document.getElementById("canvas");
 const coord = document.getElementById("coord");
-const plotType = document.getElementById("plot-type");
-const pitch = document.getElementById("pitch");
-const yaw = document.getElementById("yaw");
-const control = document.getElementById("3d-control");
 const status = document.getElementById("status");
+let zoom = 1;
 
 let chart = null;
 
@@ -21,12 +18,6 @@ async function initialize() {
 
 /** Main entry point */
 export function main() {
-	let hash = location.hash.slice(1);
-	for (var i = 0; i < plotType.options.length; i++) {
-		if (hash == plotType.options[i].value) {
-			plotType.value = hash;
-		}
-	}
 	setupUI();
 	setupCanvas();
 }
@@ -34,12 +25,8 @@ export function main() {
 /** Add event listeners. */
 function setupUI() {
 	status.innerText = "WebAssembly loaded!";
-	plotType.addEventListener("change", updatePlot);
-	yaw.addEventListener("change", updatePlot);
-	pitch.addEventListener("change", updatePlot);
-	yaw.addEventListener("input", updatePlot);
-	pitch.addEventListener("input", updatePlot);
 	window.addEventListener("resize", setupCanvas);
+	canvas.addEventListener("wheel", onScroll, false);
 	window.addEventListener("mousemove", onMouseMove);
 }
 
@@ -55,6 +42,11 @@ function setupCanvas() {
 	updatePlot();
 }
 
+function onScroll(event) {
+	zoom *= 1 - event.deltaY / 10000
+	updatePlot();
+}
+
 /** Update displayed coordinates. */
 function onMouseMove(event) {
 	if (chart) {
@@ -66,40 +58,17 @@ function onMouseMove(event) {
 			let logicY = event.offsetY * canvas.height / actualRect.height;
 			const point = chart.coord(logicX, logicY);
 			text = (point)
-				? `(${point.x.toFixed(3)}, ${point.y.toFixed(3)})`
+				? `${point.x.toFixed(3)} + ${point.y.toFixed(3)}i`
 				: text;
 		}
 		coord.innerText = text;
 	}
 }
 
-function updatePlot3d() {
-	let yaw_value = Number(yaw.value) / 100.0;
-	let pitch_value = Number(pitch.value) / 100.0;
-	Chart.plot3d(canvas, pitch_value, yaw_value);
-	coord.innerText = `Pitch:${pitch_value}, Yaw:${yaw_value}`
-}
-
 /** Redraw currently selected plot. */
 function updatePlot() {
-	const selected = plotType.selectedOptions[0];
-	status.innerText = `Rendering ${selected.innerText}...`;
-	chart = null;
 	const start = performance.now();
-	switch (selected.value) {
-		case "mandelbrot":
-			control.classList.add("hide");
-			chart = Chart.mandelbrot(canvas);
-			break;
-		case "3d-plot":
-			control.classList.remove("hide");
-			updatePlot3d();
-			break;
-		default:
-			control.classList.add("hide");
-			chart = Chart.power("canvas", Number(selected.value))
-	}
-
+	chart = Chart.complex("canvas", zoom)
 	const end = performance.now();
-	status.innerText = `Rendered ${selected.innerText} in ${Math.ceil(end - start)}ms`;
+	status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;
 }

@@ -1,40 +1,36 @@
 use crate::DrawResult;
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
-use web_sys::HtmlCanvasElement;
 
-pub fn draw(canvas: HtmlCanvasElement) -> DrawResult<()> {
-    let area = CanvasBackend::with_canvas_object(canvas)
-        .unwrap()
-        .into_drawing_area();
-    area.fill(&BLACK)?;
+pub fn draw(canvas_id: String, zoom: f64) -> DrawResult<impl Fn((i32, i32)) -> Option<(f64, f64)>> {
+    let backend = CanvasBackend::new(canvas_id.as_str()).expect("cannot find canvas");
+    let root = backend.into_drawing_area();
+    let font: FontDesc = ("sans-serif", 20.0).into();
 
-    let x_axis = (-3.0..3.0).step(0.1);
-    let z_axis = (-3.0..3.0).step(0.1);
+    root.fill(&WHITE)?;
 
-    let mut chart =
-        ChartBuilder::on(&area).build_cartesian_3d(x_axis.clone(), -3.0..3.0, z_axis.clone())?;
-    chart.with_projection(|mut pb| {
-        pb.yaw = 0.1;
-        pb.pitch = 0.2;
-        pb.scale = 0.8;
-        pb.into_matrix()
-    });
-    chart.configure_axes().draw()?;
+    let resolution = 1000;
+    let limits = resolution as f64 / (2.0 * zoom);
 
-    chart.draw_series(
-        SurfaceSeries::xoz(x_axis.values(), z_axis.values(), |x: f64, z: f64| {
-            (x * x + z * z).cos()
-        })
-        .style(&BLUE.mix(0.2)),
-    )?;
+    let mut chart = ChartBuilder::on(&root)
+        .margin(30u32)
+        .caption(format!("complex numbers"), font)
+        .x_label_area_size(30u32)
+        .y_label_area_size(30u32)
+        .build_cartesian_2d(-limits - 1f64..limits + 1f64, -limits - 1f64..limits + 1f64)?;
+
+    chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
+
+    let interval_shift = (limits + limits) / (resolution as f64);
 
     chart.draw_series(LineSeries::new(
-        (-100..100)
-            .map(|y| y as f64 / 40.0)
-            .map(|y| ((y * 10.0).sin(), y, (y * 10.0).cos())),
+        (0..=resolution)
+            .map(|x| interval_shift * (x as f64) - limits)
+            .map(|x| (x, x.powf(2.0)))
+            .filter(|(x, y)| *y < limits && *y > -limits),
         &BLACK,
     ))?;
 
-    Ok(())
+    root.present()?;
+    Ok(chart.into_coord_trans())
 }
