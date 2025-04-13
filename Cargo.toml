@@ -1,5 +1,5 @@
 [package]
-name = "complex-number-visualizer"
+name = "complex-visualizer"
 version = "0.1.0"
 edition = "2024"
 
