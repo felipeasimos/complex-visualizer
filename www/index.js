@@ -21,7 +21,7 @@ async function initialize() {
 
 /** Main entry point */
 export function main() {
-	let hash = location.hash.substr(1);
+	let hash = location.hash.slice(1);
 	for (var i = 0; i < plotType.options.length; i++) {
 		if (hash == plotType.options[i].value) {
 			plotType.value = hash;
