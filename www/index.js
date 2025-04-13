@@ -1,6 +1,6 @@
 // If you only use `npm` you can simply
 // import { Chart } from "complex-visualizer" and remove `setup` call from `bootstrap.js`.
-class Chart { }
+import { Chart, default as init } from "complex-visualizer";
 
 const canvas = document.getElementById("canvas");
 const coord = document.getElementById("coord");
@@ -12,6 +12,13 @@ const status = document.getElementById("status");
 
 let chart = null;
 
+initialize();
+
+async function initialize() {
+	await init();
+	main();
+}
+
 /** Main entry point */
 export function main() {
 	let hash = location.hash.substr(1);
@@ -22,11 +29,6 @@ export function main() {
 	}
 	setupUI();
 	setupCanvas();
-}
-
-/** This function is used in `bootstrap.js` to setup imports. */
-export function setup(WasmChart) {
-	Chart = WasmChart;
 }
 
 /** Add event listeners. */
