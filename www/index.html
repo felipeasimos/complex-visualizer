@@ -12,8 +12,27 @@
 	<main>
 	    <h1>Complex Number Visualizer</h1>
 	    <div id="coord"></div>
-        <canvas id="canvas" width="600" height="400"></canvas>
+            <canvas id="canvas" width="600" height="400"></canvas>
 	    <div id="status">Loading WebAssembly...</div>
+	    <div>
+		<ul>
+		    <h5>Vector 1</h5>
+		    <li>
+			<p>
+			    real: <input type="number" step="any" id="vector1-real"></input>
+			    imaginary: <input type="number" step="any" id="vector1-imaginary"></input>
+			</p>
+
+		    </li>
+		    <h5>Vector 2</h5>
+		    <li>
+			<p>
+			    real: <input type="number" step="any" id="vector2-real"></input>
+			    imaginary: <input type="number" step="any" id="vector2-imaginary"></input>
+			</p>
+		    </li>
+		</ul>
+	    </div>
 	</main>
     </body>
 </html>

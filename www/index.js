@@ -5,9 +5,16 @@ import { Chart, Point, default as init } from "complex-visualizer";
 const canvas = document.getElementById("canvas");
 const coord = document.getElementById("coord");
 const status = document.getElementById("status");
+const vector1Real = document.getElementById("vector1-real");
+const vector1Imaginary = document.getElementById("vector1-imaginary");
+const vector2Real = document.getElementById("vector2-real");
+const vector2Imaginary = document.getElementById("vector2-imaginary");
 
+
+let vector1 = null;
+let vector2 = null;
 let chart = null;
-let last_pressed_point = null;
+let drag_button_pressed = false;
 
 initialize();
 
@@ -21,6 +28,7 @@ export function main() {
 	chart = Chart.new("canvas");
 	setupUI();
 	setupCanvas();
+	setupVectors();
 }
 
 /** Add event listeners. */
@@ -34,11 +42,20 @@ function setupUI() {
 }
 
 function onMouseDown(evt) {
-	last_pressed_point = evt;
+	drag_button_pressed = true;
 }
 
 function onMouseUp(evt) {
-	last_pressed_point = null;
+	drag_button_pressed = false;
+}
+
+function setupVectors() {
+	vector1 = Point.zero()
+	vector2 = Point.zero()
+	vector1Real.addEventListener("change", (evt) => vector1.x = Number(evt.innerText))
+	vector1Imaginary.addEventListener("change", (evt) => vector1.y = Number(evt.innerText))
+	vector2Real.addEventListener("change", (evt) => vector2.x = Number(evt.innerText))
+	vector2Imaginary.addEventListener("change", (evt) => vector2.y = Number(evt.innerText))
 }
 
 /** Setup canvas to properly handle high DPI and redraw current plot. */
@@ -53,7 +70,6 @@ function setupCanvas() {
 }
 
 function onScroll(event) {
-	console.log(event)
 	const viewport = chart.get_viewport();
 	const diff = -event.deltaY * 0.0001;
 	const zoom_diff = (1 - diff);
@@ -79,8 +95,8 @@ function onMouseMove(event) {
 				? `${point.x.toFixed(3)} + ${point.y.toFixed(3)}i`
 				: text;
 
-			if (last_pressed_point) {
-				last_pressed_point = event;
+			if (drag_button_pressed) {
+				drag_button_pressed = event;
 				const viewport = chart.get_viewport();
 				const x = -(event.movementX / actualRect.width) * viewport.width;
 				const y = (event.movementY / actualRect.height) * viewport.height;

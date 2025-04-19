@@ -1,8 +1,8 @@
 use plotters::{
-    chart::ChartBuilder,
-    coord::Shift,
-    prelude::{DrawingArea, IntoDrawingArea},
-    series::LineSeries,
+    chart::{ChartBuilder, ChartContext},
+    coord::{Shift, types::RangedCoordf64},
+    prelude::{Cartesian2d, DrawingArea, IntoDrawingArea},
+    series::{LineSeries, PointSeries},
     style::{BLACK, FontDesc, WHITE},
 };
 use plotters_canvas::CanvasBackend;
@@ -27,6 +27,8 @@ pub struct Chart {
     viewport: Rect,
     drawing_area: DrawingArea<CanvasBackend, Shift>,
     chart_type: ChartType,
+    vector1: Option<Point>,
+    vector2: Option<Point>,
 }
 
 /// Result of screen to chart coordinates conversion.
@@ -57,6 +59,13 @@ pub struct Rect {
 }
 
 #[wasm_bindgen]
+pub enum Operation {
+    Translation,
+    Rotation,
+    Scale,
+}
+
+#[wasm_bindgen]
 pub enum ChartType {
     Complex,
 }
@@ -79,6 +88,8 @@ impl Chart {
             drawing_area: root,
             convert,
             chart_type: ChartType::Complex,
+            vector1: None,
+            vector2: None,
         })
     }
 
@@ -117,10 +128,11 @@ impl Chart {
         (self.convert)((x, y)).map(|(x, y)| Point { x, y })
     }
 
-    fn generate_chart_complex(
+    fn generate_2d_chart<'a>(
         viewport: Rect,
         drawing_area: DrawingArea<CanvasBackend, Shift>,
-    ) -> DrawResult<Box<impl Fn((i32, i32)) -> Option<(f64, f64)>>> {
+    ) -> DrawResult<ChartContext<'a, CanvasBackend, Cartesian2d<RangedCoordf64, RangedCoordf64>>>
+    {
         let font: FontDesc = ("sans-serif", 20.0).into();
         drawing_area.fill(&WHITE)?;
         let mut chart = ChartBuilder::on(&drawing_area)
@@ -134,6 +146,14 @@ impl Chart {
             )?;
 
         chart.configure_mesh().x_labels(3).y_labels(3).draw()?;
+        return Ok(chart);
+    }
+
+    fn generate_chart_complex(
+        viewport: Rect,
+        drawing_area: DrawingArea<CanvasBackend, Shift>,
+    ) -> DrawResult<Box<impl Fn((i32, i32)) -> Option<(f64, f64)>>> {
+        let mut chart = Self::generate_2d_chart(viewport, drawing_area)?;
 
         let resolution = 1000;
         let interval_shift = (viewport.width) / (resolution as f64);
