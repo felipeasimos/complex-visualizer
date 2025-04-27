@@ -10,9 +10,6 @@ const vector1Imaginary = document.getElementById("vector1-imaginary");
 const vector2Real = document.getElementById("vector2-real");
 const vector2Imaginary = document.getElementById("vector2-imaginary");
 
-
-let vector1 = null;
-let vector2 = null;
 let chart = null;
 let drag_button_pressed = false;
 
@@ -50,12 +47,22 @@ function onMouseUp(evt) {
 }
 
 function setupVectors() {
-	vector1 = Point.zero()
-	vector2 = Point.zero()
-	vector1Real.addEventListener("change", (evt) => vector1.x = Number(evt.innerText))
-	vector1Imaginary.addEventListener("change", (evt) => vector1.y = Number(evt.innerText))
-	vector2Real.addEventListener("change", (evt) => vector2.x = Number(evt.innerText))
-	vector2Imaginary.addEventListener("change", (evt) => vector2.y = Number(evt.innerText))
+	vector1Real.addEventListener("change", (evt) => {
+		chart.vector1 = Point.init(Number(evt.target.value), chart.vector1.y);
+		updatePlot();
+	})
+	vector1Imaginary.addEventListener("change", (evt) => {
+		chart.vector1 = Point.init(chart.vector1.x, Number(evt.target.value));
+		updatePlot();
+	})
+	vector2Real.addEventListener("change", (evt) => {
+		chart.vector2 = Point.init(Number(evt.target.value), chart.vector1.y);
+		updatePlot();
+	})
+	vector2Imaginary.addEventListener("change", (evt) => {
+		chart.vector2 = Point.init(chart.vector1.x, Number(evt.target.value));
+		updatePlot();
+	})
 }
 
 /** Setup canvas to properly handle high DPI and redraw current plot. */

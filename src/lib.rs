@@ -1,9 +1,11 @@
+use std::mem::swap;
+
 use plotters::{
     chart::{ChartBuilder, ChartContext},
     coord::{Shift, types::RangedCoordf64},
-    prelude::{Cartesian2d, DrawingArea, IntoDrawingArea},
+    prelude::{Cartesian2d, Circle, DrawingArea, EmptyElement, IntoDrawingArea},
     series::{LineSeries, PointSeries},
-    style::{BLACK, FontDesc, WHITE},
+    style::{BLACK, FontDesc, GREEN, RED, WHITE},
 };
 use plotters_canvas::CanvasBackend;
 use wasm_bindgen::prelude::*;
@@ -27,24 +29,40 @@ pub struct Chart {
     viewport: Rect,
     drawing_area: DrawingArea<CanvasBackend, Shift>,
     chart_type: ChartType,
-    vector1: Option<Point>,
-    vector2: Option<Point>,
+    pub vector1: Point,
+    pub vector2: Point,
 }
 
 /// Result of screen to chart coordinates conversion.
+#[derive(Copy, Clone)]
 #[wasm_bindgen]
 pub struct Point {
     pub x: f64,
     pub y: f64,
 }
 
+impl From<Point> for (f64, f64) {
+    fn from(value: Point) -> Self {
+        (value.x, value.y)
+    }
+}
+
 #[wasm_bindgen]
 impl Point {
-    pub fn zero() -> Self {
-        Self { x: 0.0, y: 0.0 }
-    }
     pub fn init(x: f64, y: f64) -> Self {
         Self { x, y }
+    }
+    pub fn translate(&self, other: Point) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl Default for Point {
+    fn default() -> Self {
+        Point { x: 0.0, y: 0.0 }
     }
 }
 
@@ -67,7 +85,7 @@ pub enum Operation {
 
 #[wasm_bindgen]
 pub enum ChartType {
-    Complex,
+    ComplexTranslate,
 }
 
 #[wasm_bindgen]
@@ -81,15 +99,20 @@ impl Chart {
             width: 200.0,
             height: 200.0,
         };
-        let convert =
-            Self::generate_chart_complex(viewport, root.clone()).map_err(|err| err.to_string())?;
+        let convert = Self::generate_chart_translate(
+            viewport,
+            root.clone(),
+            Point::default(),
+            Point::default(),
+        )
+        .map_err(|err| err.to_string())?;
         Ok(Chart {
             viewport: viewport.clone(),
             drawing_area: root,
             convert,
-            chart_type: ChartType::Complex,
-            vector1: None,
-            vector2: None,
+            chart_type: ChartType::ComplexTranslate,
+            vector1: Point::default(),
+            vector2: Point::default(),
         })
     }
 
@@ -113,10 +136,13 @@ impl Chart {
 
     pub fn update(&mut self) -> Result<(), JsValue> {
         self.convert = match self.chart_type {
-            ChartType::Complex => {
-                Self::generate_chart_complex(self.viewport, self.drawing_area.clone())
-                    .map_err(|err| err.to_string())?
-            }
+            ChartType::ComplexTranslate => Self::generate_chart_translate(
+                self.viewport,
+                self.drawing_area.clone(),
+                self.vector1.clone(),
+                self.vector2.clone(),
+            )
+            .map_err(|err| err.to_string())?,
         };
         self.drawing_area.present().map_err(|err| err.to_string())?;
         Ok(())
@@ -149,21 +175,30 @@ impl Chart {
         return Ok(chart);
     }
 
-    fn generate_chart_complex(
+    fn generate_chart_translate(
         viewport: Rect,
         drawing_area: DrawingArea<CanvasBackend, Shift>,
+        vector1: Point,
+        vector2: Point,
     ) -> DrawResult<Box<impl Fn((i32, i32)) -> Option<(f64, f64)>>> {
         let mut chart = Self::generate_2d_chart(viewport, drawing_area)?;
 
-        let resolution = 1000;
-        let interval_shift = (viewport.width) / (resolution as f64);
+        chart.draw_series(PointSeries::of_element(
+            vec![vector1.into()],
+            5,
+            &RED,
+            &|c, s, st| {
+                return Circle::new(c, s, st.filled()); // you could customize here
+            },
+        ))?;
 
-        chart.draw_series(LineSeries::new(
-            (0..=resolution)
-                .map(|x| interval_shift * (x as f64) + viewport.x)
-                .map(|x| (x, x.powf(2.0)))
-                .filter(|(x, y)| *y < viewport.y + viewport.height && *y > viewport.y),
-            &BLACK,
+        chart.draw_series(PointSeries::of_element(
+            vec![vector1.translate(vector2).into()],
+            5,
+            &GREEN,
+            &|c, s, st| {
+                return Circle::new(c, s, st.filled()); // you could customize here
+            },
         ))?;
         Ok(Box::new(chart.into_coord_trans()))
     }
