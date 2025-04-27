@@ -1,6 +1,6 @@
 // If you only use `npm` you can simply
 // import { Chart } from "complex-visualizer" and remove `setup` call from `bootstrap.js`.
-import { Chart, Point, default as init } from "complex-visualizer";
+import { Chart, Point, ChartType, default as init } from "complex-visualizer";
 
 const canvas = document.getElementById("canvas");
 const coord = document.getElementById("coord");
@@ -10,6 +10,8 @@ const vector1Imaginary = document.getElementById("vector1-imaginary");
 const vector2Real = document.getElementById("vector2-real");
 const vector2Imaginary = document.getElementById("vector2-imaginary");
 const resetButton = document.getElementById("btn-reset");
+const operationsDropdown = document.getElementById("operation");
+const result = document.getElementById("result");
 
 let chart = null;
 let drag_button_pressed = false;
@@ -37,6 +39,26 @@ function resetVectors() {
 	vector2Real.value = vector2Imaginary.value = 0
 }
 
+function changeOperation(evt) {
+	switch (evt.target.value) {
+		case "translate": {
+			chart.chart_type = ChartType.ComplexTranslate;
+			updatePlot();
+			return;
+		}
+		case "rotate": {
+			chart.chart_type = ChartType.ComplexRotate;
+			updatePlot();
+			return;
+		}
+		case "scale": {
+			chart.chart_type = ChartType.ComplexScale;
+			updatePlot();
+			return;
+		}
+	}
+}
+
 /** Add event listeners. */
 function setupUI() {
 	status.innerText = "WebAssembly loaded!";
@@ -45,7 +67,8 @@ function setupUI() {
 	canvas.addEventListener("wheel", onScroll, false);
 	window.addEventListener("mousedown", onMouseDown);
 	window.addEventListener("mouseup", onMouseUp);
-	resetButton.addEventListener("click", resetVectors)
+	resetButton.addEventListener("click", resetVectors);
+	operationsDropdown.addEventListener("change", changeOperation);
 }
 
 function onMouseDown(evt) {
@@ -66,11 +89,11 @@ function setupVectors() {
 		updatePlot();
 	})
 	vector2Real.addEventListener("change", (evt) => {
-		chart.vector2 = Point.init(Number(evt.target.value), chart.vector1.y);
+		chart.vector2 = Point.init(Number(evt.target.value), chart.vector2.y);
 		updatePlot();
 	})
 	vector2Imaginary.addEventListener("change", (evt) => {
-		chart.vector2 = Point.init(chart.vector1.x, Number(evt.target.value));
+		chart.vector2 = Point.init(chart.vector2.x, Number(evt.target.value));
 		updatePlot();
 	})
 }
@@ -125,10 +148,27 @@ function onMouseMove(event) {
 	}
 }
 
+function operationResult() {
+	switch (operationsDropdown.value) {
+		case "translate": {
+			return chart.vector1.translate(chart.vector2)
+		}
+		case "rotate": {
+			return chart.vector1.rotate(chart.vector2.x)
+
+		}
+		case "scale": {
+			return chart.vector1.scale(chart.vector2.x)
+		}
+	}
+}
+
 /** Redraw currently selected plot. */
 function updatePlot() {
 	const start = performance.now();
 	chart.update();
 	const end = performance.now();
 	status.innerText = `Rendered in ${Math.ceil(end - start)}ms`;
+	const resultVector = operationResult()
+	result.innerText = `Result: ${resultVector.x} + ${resultVector.y}i`
 }

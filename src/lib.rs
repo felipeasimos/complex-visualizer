@@ -28,7 +28,7 @@ pub struct Chart {
     convert: Box<dyn Fn((i32, i32)) -> Option<(f64, f64)>>,
     viewport: Rect,
     drawing_area: DrawingArea<CanvasBackend, Shift>,
-    chart_type: ChartType,
+    pub chart_type: ChartType,
     pub vector1: Point,
     pub vector2: Point,
 }
@@ -58,6 +58,18 @@ impl Point {
             y: self.y + other.y,
         }
     }
+    pub fn rotate(&self, angle: f64) -> Self {
+        Self {
+            x: self.x * angle.cos() - self.y * angle.sin(),
+            y: self.x * angle.sin() + self.y * angle.cos(),
+        }
+    }
+    pub fn scale(&self, scale: f64) -> Self {
+        Self {
+            x: self.x * scale,
+            y: self.y * scale,
+        }
+    }
 }
 
 impl Default for Point {
@@ -76,16 +88,12 @@ pub struct Rect {
     pub height: f64,
 }
 
-#[wasm_bindgen]
-pub enum Operation {
-    Translation,
-    Rotation,
-    Scale,
-}
-
+#[derive(Copy, Clone)]
 #[wasm_bindgen]
 pub enum ChartType {
     ComplexTranslate,
+    ComplexRotate,
+    ComplexScale,
 }
 
 #[wasm_bindgen]
@@ -99,11 +107,12 @@ impl Chart {
             width: 200.0,
             height: 200.0,
         };
-        let convert = Self::generate_chart_translate(
+        let convert = Self::generate_chart(
             viewport,
             root.clone(),
             Point::default(),
             Point::default(),
+            ChartType::ComplexTranslate,
         )
         .map_err(|err| err.to_string())?;
         Ok(Chart {
@@ -120,10 +129,6 @@ impl Chart {
         self.viewport
     }
 
-    pub fn set_chart_type(&mut self, chart_type: ChartType) -> () {
-        self.chart_type = chart_type;
-    }
-
     pub fn translate(&mut self, translation: Point) -> () {
         self.viewport.x += translation.x;
         self.viewport.y += translation.y;
@@ -135,15 +140,14 @@ impl Chart {
     }
 
     pub fn update(&mut self) -> Result<(), JsValue> {
-        self.convert = match self.chart_type {
-            ChartType::ComplexTranslate => Self::generate_chart_translate(
-                self.viewport,
-                self.drawing_area.clone(),
-                self.vector1.clone(),
-                self.vector2.clone(),
-            )
-            .map_err(|err| err.to_string())?,
-        };
+        self.convert = Self::generate_chart(
+            self.viewport,
+            self.drawing_area.clone(),
+            self.vector1.clone(),
+            self.vector2.clone(),
+            self.chart_type,
+        )
+        .map_err(|err| err.to_string())?;
         self.drawing_area.present().map_err(|err| err.to_string())?;
         Ok(())
     }
@@ -175,11 +179,12 @@ impl Chart {
         return Ok(chart);
     }
 
-    fn generate_chart_translate(
+    fn generate_chart(
         viewport: Rect,
         drawing_area: DrawingArea<CanvasBackend, Shift>,
         vector1: Point,
         vector2: Point,
+        chart_type: ChartType,
     ) -> DrawResult<Box<impl Fn((i32, i32)) -> Option<(f64, f64)>>> {
         let mut chart = Self::generate_2d_chart(viewport, drawing_area)?;
 
@@ -192,8 +197,13 @@ impl Chart {
             },
         ))?;
 
+        let result = match chart_type {
+            ChartType::ComplexTranslate => vector1.translate(vector2).into(),
+            ChartType::ComplexRotate => vector1.rotate(vector2.x).into(),
+            ChartType::ComplexScale => vector1.scale(vector2.x).into(),
+        };
         chart.draw_series(PointSeries::of_element(
-            vec![vector1.translate(vector2).into()],
+            vec![result],
             5,
             &GREEN,
             &|c, s, st| {
