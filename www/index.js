@@ -9,6 +9,7 @@ const vector1Real = document.getElementById("vector1-real");
 const vector1Imaginary = document.getElementById("vector1-imaginary");
 const vector2Real = document.getElementById("vector2-real");
 const vector2Imaginary = document.getElementById("vector2-imaginary");
+const resetButton = document.getElementById("btn-reset");
 
 let chart = null;
 let drag_button_pressed = false;
@@ -26,6 +27,14 @@ export function main() {
 	setupUI();
 	setupCanvas();
 	setupVectors();
+	resetVectors();
+}
+
+function resetVectors() {
+	chart.vector1 = Point.init(0, 0);
+	chart.vector2 = Point.init(0, 0);
+	vector1Real.value = vector1Imaginary.value = 0
+	vector2Real.value = vector2Imaginary.value = 0
 }
 
 /** Add event listeners. */
@@ -36,6 +45,7 @@ function setupUI() {
 	canvas.addEventListener("wheel", onScroll, false);
 	window.addEventListener("mousedown", onMouseDown);
 	window.addEventListener("mouseup", onMouseUp);
+	resetButton.addEventListener("click", resetVectors)
 }
 
 function onMouseDown(evt) {
