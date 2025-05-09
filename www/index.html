@@ -19,12 +19,16 @@
 		<option value="rotate">Rotate</option>
 		<option value="scale">Scale</option>
 	    </select>
-	    <p>Red dot is vector1, vector2 is the translation</p>
+	    <p>First row is the imaginary number, second row is the parameters of the chosen operation:</p>
+	    <ul>
+		<li>another imaginary number for translation</li>
+		<li>just the real input of rotation and scale (imaginary part is ignored)</li>
+	    </ul>
 	    <div id="status">Loading WebAssembly...</div>
 	    <button id="btn-reset">reset</button>
 	    <div>
 		<ul>
-		    <h5 style="color: red">Vector</h5>
+		    <h5 style="color: red">Imaginary Number</h5>
 		    <li>
 			<p>
 			    real: <input type="number" step="any" id="vector1-real"></input>

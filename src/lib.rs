@@ -88,7 +88,7 @@ pub struct Rect {
     pub height: f64,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 #[wasm_bindgen]
 pub enum ChartType {
     ComplexTranslate,

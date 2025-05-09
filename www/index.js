@@ -7,6 +7,7 @@ const coord = document.getElementById("coord");
 const status = document.getElementById("status");
 const vector1Real = document.getElementById("vector1-real");
 const vector1Imaginary = document.getElementById("vector1-imaginary");
+const vector2Banner = document.getElementById("vector2");
 const vector2Real = document.getElementById("vector2-real");
 const vector2Imaginary = document.getElementById("vector2-imaginary");
 const resetButton = document.getElementById("btn-reset");
@@ -155,7 +156,6 @@ function operationResult() {
 		}
 		case "rotate": {
 			return chart.vector1.rotate(chart.vector2.x)
-
 		}
 		case "scale": {
 			return chart.vector1.scale(chart.vector2.x)
@@ -165,6 +165,7 @@ function operationResult() {
 
 /** Redraw currently selected plot. */
 function updatePlot() {
+	vector2Banner.innerText = Object.keys(ChartType).find(key => ChartType[key] === chart.chart_type).slice('complex'.length)
 	const start = performance.now();
 	chart.update();
 	const end = performance.now();
