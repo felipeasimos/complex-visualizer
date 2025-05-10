@@ -1,50 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-	<meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Complex Number Visualizer</title>
-	<link rel="stylesheet" href="./style.css">
-    </head>
-    <body>
-        <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-        <script src="./index.js" type="module"></script>
-	<main>
-	    <h1>Complex Number Visualizer</h1>
-	    <div id="coord"></div>
-	    <div id="result"></div>
-            <canvas id="canvas" width="600" height="400"></canvas>
-	    <select name="operations" id="operation">
-		<option value="translate">Translate</option>
-		<option value="rotate">Rotate</option>
-		<option value="scale">Scale</option>
-	    </select>
-	    <p>First row is the imaginary number, second row is the parameters of the chosen operation:</p>
-	    <ul>
-		<li>another imaginary number for translation</li>
-		<li>just the real input of rotation and scale (imaginary part is ignored)</li>
-	    </ul>
-	    <div id="status">Loading WebAssembly...</div>
-	    <button id="btn-reset">reset</button>
-	    <div>
-		<ul>
-		    <h5 style="color: red">Imaginary Number</h5>
-		    <li>
-			<p>
-			    real: <input type="number" step="any" id="vector1-real"></input>
-			    imaginary: <input type="number" step="any" id="vector1-imaginary"></input>
-			</p>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Complex Number Visualizer</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <noscript>This page contains WebAssembly and JavaScript content. Please enable JavaScript in your browser.</noscript>
+  <script src="./index.js" type="module"></script>
 
-		    </li>
-		    <h5 id="vector2">Translation</h5>
-		    <li>
-			<p>
-			    real: <input type="number" step="any" id="vector2-real"></input>
-			    imaginary: <input type="number" step="any" id="vector2-imaginary"></input>
-			</p>
-		    </li>
-		</ul>
-	    </div>
-	</main>
-    </body>
+  <main>
+    <h1>Complex Number Visualizer</h1>
+    <div id="coord">Move your mouse over the canvas</div>
+    <div id="result">Result:</div>
+    <canvas id="canvas" width="600" height="400"></canvas>
+
+    <label for="operation">Operation:</label>
+    <select name="operations" id="operation">
+      <option value="translate">Translate</option>
+      <option value="rotate">Rotate</option>
+      <option value="scale">Scale</option>
+    </select>
+
+    <div id="status">Loading WebAssembly...</div>
+    <button id="btn-reset">Reset</button>
+
+    <div class="vector-group">
+      <div class="vector-box">
+        <h5>Imaginary Number</h5>
+        <label for="vector1-real">Real:</label>
+        <input type="number" step="any" id="vector1-real" />
+        <label for="vector1-imaginary">Imaginary:</label>
+        <input type="number" step="any" id="vector1-imaginary" />
+      </div>
+
+      <div class="vector-box">
+        <h5 id="vector2">Translation</h5>
+        <label for="vector2-real">Real:</label>
+        <input type="number" step="any" id="vector2-real" />
+        <label for="vector2-imaginary">Imaginary:</label>
+        <input type="number" step="any" id="vector2-imaginary" />
+      </div>
+    </div>
+  </main>
+</body>
 </html>
