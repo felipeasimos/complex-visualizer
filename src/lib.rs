@@ -165,9 +165,10 @@ impl Chart {
     {
         let font: FontDesc = ("sans-serif", 20.0).into();
         drawing_area.fill(&WHITE)?;
+
         let mut chart = ChartBuilder::on(&drawing_area)
-            .margin(30u32)
             .caption(format!("complex numbers"), font)
+            .margin(30u32)
             .x_label_area_size(30u32)
             .y_label_area_size(30u32)
             .build_cartesian_2d(

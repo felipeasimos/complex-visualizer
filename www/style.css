@@ -27,6 +27,7 @@ canvas {
   border-radius: 8px;
   background-color: #fff;
   max-width: 100%;
+  padding: 40px;
 }
 
 #coord, #result, #status {
