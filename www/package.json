@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
+    "prebuild": "wasm-pack build .. --target web --out-dir ./www/pkg",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -33,6 +34,7 @@
     "@rollup/plugin-wasm": "^6.2.2",
     "typescript": "~5.7.2",
     "vite": "^6.2.0",
-    "vite-plugin-wasm": "^3.4.1"
+    "vite-plugin-wasm": "^3.4.1",
+    "wasm-pack": "^0.13.1"
   }
 }
