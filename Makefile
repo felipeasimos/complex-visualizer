@@ -1,4 +1,4 @@
-.PHONY: all build serve
+.PHONY: all build serve vercel-build
 all: build serve
 build:
 	RUSTC_WRAPPER=sccache wasm-pack build --out-dir www/pkg --target web
