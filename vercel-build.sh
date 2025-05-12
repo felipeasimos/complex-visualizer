@@ -10,15 +10,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
 # Verify cargo is available
 cargo --version
-wasm-pack --version || cargo install wasm-pack
+# wasm-pack --version || cargo install wasm-pack
 
 # Build WASM
-wasm-pack build --target web --out-dir ./www/pkg
-
-# Move to Vite frontend
-cd www
-
-# Install dependencies and build frontend
-npm install
-npm run build
-
+# wasm-pack build --target web --out-dir ./www/pkg
