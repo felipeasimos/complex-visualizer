@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "prebuild": "wasm-pack build .. --target web --out-dir ./www/pkg",
     "build": "vite build",
     "preview": "vite preview"
   },
